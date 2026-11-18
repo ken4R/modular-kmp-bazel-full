@@ -1,0 +1,11 @@
+load("//ios:ios_module.bzl", "ios_module")
+
+# The Swift side of the shared Kotlin code: the `Shared` framework and the adapters SwiftUI needs.
+ios_module(
+    name = "SharedKit",
+    frameworks = [
+        # Built by Bazel from //shared, for the device or the simulator the build is for. The
+        # Swift package reads Frameworks/Shared.xcframework, which tools/shared/sync copies there.
+        "//shared/umbrella:Shared",
+    ],
+)

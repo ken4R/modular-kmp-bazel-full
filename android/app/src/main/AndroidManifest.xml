@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Class names are written in full: the application id, com.example.modular, is not the package
+     of the code, com.example.modular.app. The SDK levels and the version come from the build. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.modular.app">
+
+    <application
+        android:name="com.example.modular.app.ModularApplication"
+        android:allowBackup="false"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@android:style/Theme.Material.Light.NoActionBar">
+
+        <activity
+            android:name="com.example.modular.app.MainActivity"
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

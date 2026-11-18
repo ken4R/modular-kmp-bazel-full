@@ -1,0 +1,22 @@
+# Bazel
+/bazel-*
+.bazelrc.user
+
+# Shared framework for the Swift packages: copied by tools/shared/sync, never committed
+/ios/SharedKit/Frameworks/
+
+# Xcode and SwiftPM
+*.xcodeproj/
+*.xcworkspace/
+xcuserdata/
+DerivedData/
+.swiftpm/
+.build/
+Package.resolved
+
+# Editors and system
+.idea/
+.ijwb/
+*.iml
+.vscode/
+.DS_Store

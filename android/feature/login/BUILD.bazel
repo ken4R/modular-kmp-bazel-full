@@ -1,0 +1,11 @@
+load("//android:android_module.bzl", "android_feature")
+
+# The login screen in Compose. Its logic is the shared LoginViewModel of //shared/feature/login.
+android_feature(
+    name = "login",
+    deps = [
+        "//android/core/designsystem",
+        # LoginRoute and LoginScreen take the shared ViewModel and its state as parameters.
+        "//shared/feature/login",
+    ],
+)

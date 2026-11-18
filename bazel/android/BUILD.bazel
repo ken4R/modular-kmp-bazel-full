@@ -1,0 +1,20 @@
+load("@rules_java//java:java_library.bzl", "java_library")
+load(":robolectric.bzl", "robolectric_deps_properties")
+
+# The Android framework that Robolectric runs the screen tests on: Android 16, API level 36, the
+# targetSdk of android/android_module.bzl. The jar is declared in MODULE.bazel.
+robolectric_deps_properties(
+    name = "robolectric_deps_properties",
+    jar = "@robolectric_android_all//file",
+    visibility = ["//android:__subpackages__"],
+)
+
+# Puts the jar and its properties file in the runfiles of the tests that depend on it.
+java_library(
+    name = "robolectric_android_all",
+    data = [
+        ":robolectric_deps_properties",
+        "@robolectric_android_all//file",
+    ],
+    visibility = ["//android:__subpackages__"],
+)

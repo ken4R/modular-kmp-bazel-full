@@ -1,0 +1,18 @@
+load("@rules_xcodeproj//xcodeproj:defs.bzl", "top_level_target", "xcodeproj")
+
+# The Xcode project of the application: `bazel run //ios:xcodeproj`, then open ios/Modular.xcodeproj.
+# It is generated and never committed. Bazel still does the build when Xcode builds.
+# List the tests of a new module here, so that Xcode can run them.
+xcodeproj(
+    name = "xcodeproj",
+    project_name = "Modular",
+    tags = ["manual"],
+    top_level_targets = [
+        top_level_target(
+            "//ios/App",
+            target_environments = ["simulator"],
+        ),
+        "//ios/Features/Login:LoginTests",
+        "//ios/SharedKit:SharedKitTests",
+    ],
+)

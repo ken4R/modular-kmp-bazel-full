@@ -1,0 +1,23 @@
+# Bazel builds everything here: the shared Kotlin code, Android and iOS. See AGENTS.md.
+
+# Java and Kotlin tools run on a JDK that Bazel downloads, the same on every machine.
+common --java_runtime_version=remotejdk_21
+common --tool_java_runtime_version=remotejdk_21
+common --java_language_version=17
+common --tool_java_language_version=17
+
+# Android dexing with D8, as the Android Gradle plugin does.
+build --define=android_dexmerger_tool=d8_dexmerger
+build --define=android_incremental_dexing_tool=d8_dexbuilder
+build --define=android_standalone_dexing_tool=d8_compat_dx
+
+# rules_android builds some of its tools from source, with protobuf, which needs C++17.
+build --cxxopt=-std=c++17
+build --host_cxxopt=-std=c++17
+
+# Show why an action failed, and the log of a failing test, without another run.
+build --verbose_failures
+test --test_output=errors
+
+# Local settings that must not be committed.
+try-import %workspace%/.bazelrc.user

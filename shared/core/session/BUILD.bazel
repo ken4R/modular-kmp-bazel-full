@@ -1,0 +1,4 @@
+load("//shared:kmp_module.bzl", "kmp_core")
+
+# The session of the current user. Features depend on SessionRepository, never on an implementation.
+kmp_core(name = "session")
