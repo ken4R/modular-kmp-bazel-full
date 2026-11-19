@@ -80,12 +80,6 @@ maven.install(
         "androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0",
         "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0",
 
-        # What the Compose BOM aligns in Gradle: material3 asks for older Compose libraries, whose
-        # exact version ranges then conflict with the libraries of Compose 1.12.
-        "androidx.compose.animation:animation:1.12.1",
-        "androidx.compose.foundation:foundation:1.12.1",
-        "androidx.compose.material:material-ripple:1.12.1",
-
         # Compose compiler, a Kotlin compiler plugin: its version is the Kotlin version.
         "org.jetbrains.kotlin:kotlin-compose-compiler-plugin-embeddable:2.4.21",
 
@@ -96,18 +90,81 @@ maven.install(
         "junit:junit:4.13.2",
         "org.robolectric:robolectric:4.18",
 
-        # The versions Gradle picks, the highest ones: Compose testing still asks for Espresso 3.5,
-        # whose exact version ranges conflict with androidx.test.ext:junit and Robolectric.
+        # --- The versions Gradle selects for the libraries above ---
+        #
+        # Bazel resolves Maven artifacts from their POM files, Gradle from their Gradle module
+        # metadata. In a POM, an AndroidX library requires the exact version of the other libraries
+        # of its group, so two libraries of one group at different versions make the resolution
+        # fail: Gradle aligns them, and the Compose BOM raises the Compose libraries that material3
+        # asks for at older versions. Each library below is pinned at the version Gradle selects
+        # (the same list as prototype B), and version_conflict_policy makes the pins win. Check
+        # them again after any version change above.
+        "androidx.activity:activity:1.13.0",
+        "androidx.activity:activity-ktx:1.13.0",
+        "androidx.annotation:annotation:1.9.1",
+        "androidx.annotation:annotation-experimental:1.4.1",
+        "androidx.annotation:annotation-jvm:1.9.1",
+        "androidx.collection:collection:1.5.0",
+        "androidx.collection:collection-jvm:1.5.0",
+        "androidx.collection:collection-ktx:1.5.0",
+        "androidx.compose.animation:animation:1.12.1",
+        "androidx.compose.animation:animation-core:1.12.1",
+        "androidx.compose.foundation:foundation:1.12.1",
+        "androidx.compose.foundation:foundation-layout:1.12.1",
+        "androidx.compose.material:material-ripple:1.12.1",
+        "androidx.compose.runtime:runtime:1.12.1",
+        "androidx.compose.runtime:runtime-annotation:1.12.1",
+        "androidx.compose.runtime:runtime-annotation-android:1.12.1",
+        "androidx.compose.runtime:runtime-retain:1.12.1",
+        "androidx.compose.runtime:runtime-saveable:1.12.1",
+        "androidx.compose.ui:ui-geometry:1.12.1",
+        "androidx.compose.ui:ui-graphics:1.12.1",
+        "androidx.compose.ui:ui-test:1.12.1",
+        "androidx.compose.ui:ui-text:1.12.1",
+        "androidx.compose.ui:ui-unit:1.12.1",
+        "androidx.compose.ui:ui-util:1.12.1",
+        "androidx.concurrent:concurrent-futures:1.2.0",
+        "androidx.core:core:1.18.0",
+        "androidx.core:core-ktx:1.18.0",
+        "androidx.core:core-viewtree:1.0.0",
+        "androidx.emoji2:emoji2:1.4.0",
+        "androidx.interpolator:interpolator:1.0.0",
+        "androidx.lifecycle:lifecycle-common:2.11.0",
+        "androidx.lifecycle:lifecycle-common-java8:2.11.0",
+        "androidx.lifecycle:lifecycle-livedata-core:2.11.0",
+        "androidx.lifecycle:lifecycle-process:2.11.0",
+        "androidx.lifecycle:lifecycle-runtime:2.11.0",
+        "androidx.lifecycle:lifecycle-runtime-ktx:2.11.0",
+        "androidx.lifecycle:lifecycle-viewmodel-ktx:2.11.0",
+        "androidx.lifecycle:lifecycle-viewmodel-savedstate:2.11.0",
+        "androidx.savedstate:savedstate:1.4.0",
+        "androidx.savedstate:savedstate-compose:1.4.0",
+        "androidx.savedstate:savedstate-ktx:1.4.0",
+        "androidx.startup:startup-runtime:1.1.1",
         "androidx.test:monitor:1.8.0",
         "androidx.test.services:storage:1.6.0",
+        "androidx.tracing:tracing:1.2.0",
+        "androidx.versionedparcelable:versionedparcelable:1.1.1",
+        "androidx.window:window-core-android:1.5.0",
     ],
     repositories = [
         "https://maven.google.com",
         "https://repo1.maven.org/maven2",
     ],
     use_starlark_android_rules = True,
-    # The versions listed here win over those that libraries ask for, as with Gradle constraints.
+    # The versions listed above win over those that libraries ask for.
     version_conflict_policy = "pinned",
+)
+
+# The POMs of these two multiplatform libraries name their JVM artifact, where Gradle takes the
+# Android one for an Android application: both would end up in the APK.
+maven.override(
+    coordinates = "androidx.compose.runtime:runtime-annotation",
+    target = "@maven//:androidx_compose_runtime_runtime_annotation_android",
+)
+maven.override(
+    coordinates = "androidx.window:window-core",
+    target = "@maven//:androidx_window_window_core_android",
 )
 
 # The Kotlin standard library comes with the compiler of rules_kotlin: one copy, at its version.
