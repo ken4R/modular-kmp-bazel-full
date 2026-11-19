@@ -53,7 +53,7 @@ class LoginScreenTest {
 
     @Test
     fun errorOfTheSharedStateIsDisplayed() {
-        show(LoginUiState(email = "ada@example.com", password = "wrong", error = LoginError.InvalidCredentials))
+        show(LoginUiState(email = "ada@example.com", password = "wrong", error = LoginError.INVALID_CREDENTIALS))
 
         composeRule.onNodeWithText("E-mail ou mot de passe incorrect.").assertIsDisplayed()
     }

@@ -15,8 +15,12 @@ public data class LoginUiState(
         get() = email.isNotBlank() && password.isNotEmpty() && !isSubmitting
 }
 
-/** Why the last attempt failed. Each platform maps a value to its own localized message. */
+/**
+ * Why the last attempt failed. Each platform maps a value to its own localized message.
+ *
+ * Entries are in upper case: Swift sees INVALID_EMAIL as `invalidEmail`.
+ */
 public enum class LoginError {
-    InvalidEmail,
-    InvalidCredentials,
+    INVALID_EMAIL,
+    INVALID_CREDENTIALS,
 }

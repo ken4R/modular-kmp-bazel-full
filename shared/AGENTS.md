@@ -56,7 +56,8 @@ Il n'y a pas de SKIE : Swift lit l'en-tête Objective-C que le compilateur Kotli
 - Un module garde ses noms Kotlin en Swift s'il est listé dans `export_to_swift`, dans `umbrella/BUILD.bazel`. Les autres gardent un préfixe : `StateFlow` devient `Kotlinx_coroutines_coreStateFlow`.
 - Les génériques d'une interface disparaissent : `state.value` est un `Any?`. `Observed`, dans `ios/SharedKit`, redonne le type de l'état, et `values(of:)` lit un `Flow` comme une séquence asynchrone. Les deux s'appuient sur `subscribe`, dans `umbrella/src/iosMain`.
 - Une `sealed interface` devient un protocole et ses cas des classes : un `switch` en Swift teste les types et a besoin d'un `default`. Un `enum` Kotlin devient une classe, `LoginError.invalidEmail`, avec le même `default`.
-- Une fonction `suspend` devient une fonction `async throws`. Une lambda Kotlin qui renvoie `Unit` renvoie `KotlinUnit` en Swift. Une fonction de premier niveau vit dans la classe `<Fichier>Kt`.
+- Les entrées d'un `enum` s'écrivent en majuscules : `INVALID_EMAIL` devient `invalidEmail` en Swift. Le compilateur met chaque segment entre `_` en minuscules, et une entrée écrite `InvalidEmail` deviendrait `invalidemail`.
+- Une fonction `suspend` devient une fonction `async throws`. Une lambda Kotlin qui renvoie `Unit` est une closure Swift qui ne renvoie rien. Une fonction de premier niveau vit dans la classe `<Fichier>Kt`.
 - Les valeurs par défaut des paramètres n'existent pas en Swift : il passe tous les arguments.
 - Après un changement visible depuis Swift, `bazel test //ios/...` reconstruit le framework de lui-même. Relancer `tools/shared/sync` pour les paquets Swift. Sur macOS ou par la CI.
 

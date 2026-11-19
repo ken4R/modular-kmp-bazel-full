@@ -44,7 +44,7 @@ public class LoginViewModel(
 
         val email = form.email.trim()
         if (!isValidEmail(email)) {
-            _state.update { it.copy(error = LoginError.InvalidEmail) }
+            _state.update { it.copy(error = LoginError.INVALID_EMAIL) }
             return
         }
 
@@ -57,7 +57,7 @@ public class LoginViewModel(
                 }
 
                 SignInResult.InvalidCredentials -> {
-                    _state.update { it.copy(isSubmitting = false, error = LoginError.InvalidCredentials) }
+                    _state.update { it.copy(isSubmitting = false, error = LoginError.INVALID_CREDENTIALS) }
                 }
             }
         }

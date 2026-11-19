@@ -15,11 +15,9 @@ extension Kotlinx_coroutines_coreFlow {
                 flow: self,
                 onValue: { value in
                     continuation.yield(value as! Value)
-                    return KotlinUnit()
                 },
                 onCompletion: {
                     continuation.finish()
-                    return KotlinUnit()
                 }
             )
             continuation.onTermination = { _ in

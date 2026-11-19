@@ -72,7 +72,7 @@ class LoginViewModelTest {
         viewModel.submit()
         advanceUntilIdle()
 
-        assertEquals(LoginError.InvalidCredentials, viewModel.state.value.error)
+        assertEquals(LoginError.INVALID_CREDENTIALS, viewModel.state.value.error)
         assertFalse(viewModel.state.value.isSubmitting)
         assertNull(sessions.session.value)
     }
@@ -86,7 +86,7 @@ class LoginViewModelTest {
         viewModel.submit()
         advanceUntilIdle()
 
-        assertEquals(LoginError.InvalidEmail, viewModel.state.value.error)
+        assertEquals(LoginError.INVALID_EMAIL, viewModel.state.value.error)
         assertFalse(viewModel.state.value.isSubmitting)
         assertNull(sessions.session.value)
     }

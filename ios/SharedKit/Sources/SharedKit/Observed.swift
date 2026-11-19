@@ -35,16 +35,16 @@ public final class Observed<VM: ViewModel, UiState> {
         self.state = flow.value as! UiState
         self.lifetime = ViewModelLifetime(viewModel: viewModel)
         // Changes the ViewModel makes on its own, for example when a request ends. Kotlin calls
-        // back on the main thread. A Kotlin lambda that returns Unit returns KotlinUnit in Swift.
+        // back on the main thread.
         self.subscription = FlowSubscriptionKt.subscribe(
             flow: flow,
             onValue: { [weak self] value in
+                let newState = value as! UiState
                 MainActor.assumeIsolated {
-                    self?.state = value as! UiState
+                    self?.state = newState
                 }
-                return KotlinUnit()
             },
-            onCompletion: { KotlinUnit() }
+            onCompletion: {}
         )
     }
 

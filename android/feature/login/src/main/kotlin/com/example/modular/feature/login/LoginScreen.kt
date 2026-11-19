@@ -55,7 +55,7 @@ fun LoginScreen(
                 label = { Text(stringResource(R.string.login_email)) },
                 singleLine = true,
                 enabled = !state.isSubmitting,
-                isError = state.error == LoginError.InvalidEmail,
+                isError = state.error == LoginError.INVALID_EMAIL,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next),
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -65,7 +65,7 @@ fun LoginScreen(
                 label = { Text(stringResource(R.string.login_password)) },
                 singleLine = true,
                 enabled = !state.isSubmitting,
-                isError = state.error == LoginError.InvalidCredentials,
+                isError = state.error == LoginError.INVALID_CREDENTIALS,
                 visualTransformation = PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = { onSubmit() }),
@@ -99,8 +99,8 @@ fun LoginScreen(
 /** Wording is a platform concern: the shared code only says which error happened. */
 private val LoginError.messageRes: Int
     get() = when (this) {
-        LoginError.InvalidEmail -> R.string.login_error_invalid_email
-        LoginError.InvalidCredentials -> R.string.login_error_invalid_credentials
+        LoginError.INVALID_EMAIL -> R.string.login_error_invalid_email
+        LoginError.INVALID_CREDENTIALS -> R.string.login_error_invalid_credentials
     }
 
 @Preview(showBackground = true)
@@ -111,7 +111,7 @@ private fun LoginScreenPreview() {
             state = LoginUiState(
                 email = "ada@example.com",
                 password = "secret",
-                error = LoginError.InvalidCredentials,
+                error = LoginError.INVALID_CREDENTIALS,
             ),
             onEmailChanged = {},
             onPasswordChanged = {},

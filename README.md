@@ -6,7 +6,7 @@ Ce dépôt porte le prototype de la solution C, dite tout Bazel : Bazel construi
 
 ## Ce que le prototype contient
 
-Une feature de référence, `login`, traverse toutes les couches. Ses sources sont celles du prototype A : seuls les fichiers de build changent.
+Une feature de référence, `login`, traverse toutes les couches. Ses sources sont celles du prototype A, à deux différences près, qui viennent de l'absence de SKIE : les adaptateurs Swift de `ios/SharedKit` lisent l'en-tête Objective-C brut, et les entrées de l'`enum` `LoginError` s'écrivent en majuscules pour garder leur nom en Swift.
 
 | Couche | Emplacement | Contenu |
 |---|---|---|
