@@ -73,7 +73,32 @@ def _compiler_arguments(ctx, target):
     arguments.add("-Xoverride-konan-properties=airplaneMode=true")
     return arguments
 
-def _run_compiler(ctx, *, target, arguments, inputs, outputs, mnemonic, progress_message):
+# Runs konanc with klibs given by absolute paths. The compiler looks for the klibs of -Xinclude
+# among the libraries it resolved, comparing absolute paths with the paths as written: relative
+# paths, the only ones Bazel knows before the action runs, never match. The script adds the
+# directory the action runs in, the execution root, in front of each klib.
+#
+#   $1    konanc
+#   $2    the parameter file of the other arguments
+#   $3…   <option>=<klib relative to the execution root>, for -library, -Xinclude and -Xexport-library
+_KONANC_WITH_ABSOLUTE_KLIBS = """set -euo pipefail
+konanc="$1"
+parameters="$2"
+shift 2
+klibs=()
+for argument in "$@"; do
+  option="${argument%%=*}"
+  klib="$PWD/${argument#*=}"
+  case "$option" in
+    -library) klibs+=("$option" "$klib") ;;
+    *) klibs+=("$option=$klib") ;;
+  esac
+done
+exec "$konanc" "$parameters" "${klibs[@]}"
+"""
+
+def _run_compiler(ctx, *, target, arguments, inputs, outputs, mnemonic, progress_message, absolute_klibs = None):
+    """Runs konanc on `arguments`, followed by `absolute_klibs` (see _KONANC_WITH_ABSOLUTE_KLIBS)."""
     toolchain = _toolchain(ctx)
     java_runtime = ctx.attr._java_runtime[java_common.JavaRuntimeInfo]
     xcode_config = ctx.attr._xcode_config[apple_common.XcodeVersionConfig]
@@ -84,9 +109,7 @@ def _run_compiler(ctx, *, target, arguments, inputs, outputs, mnemonic, progress
     env["JAVA_HOME"] = java_runtime.java_home
     env["KONAN_DATA_DIR"] = toolchain.data
 
-    ctx.actions.run(
-        executable = toolchain.konanc,
-        arguments = [arguments],
+    action = dict(
         inputs = depset(
             transitive = [
                 inputs,
@@ -101,6 +124,16 @@ def _run_compiler(ctx, *, target, arguments, inputs, outputs, mnemonic, progress
         execution_requirements = _xcode_execution_requirements(xcode_config),
         mnemonic = mnemonic,
         progress_message = progress_message,
+    )
+    if absolute_klibs == None:
+        ctx.actions.run(executable = toolchain.konanc, arguments = [arguments], **action)
+        return
+
+    ctx.actions.run_shell(
+        command = _KONANC_WITH_ABSOLUTE_KLIBS,
+        arguments = [toolchain.konanc.path, arguments, absolute_klibs],
+        tools = [toolchain.konanc],
+        **action
     )
 
 def _module_name(ctx):
@@ -255,6 +288,8 @@ def _kt_native_framework_impl(ctx):
     name = ctx.attr.framework_name
     main = ctx.attr.main[KotlinNativeInfo]
     main_klibs = main.klibs[target]
+    if not main_klibs:
+        fail("{}: {} has no klib for {}.".format(ctx.label, ctx.attr.main.label, target))
     libraries = [klib for klib in main.transitive_klibs[target].to_list() if klib not in main_klibs]
 
     exported = []
@@ -282,14 +317,16 @@ def _kt_native_framework_impl(ctx):
     arguments.add("-produce", "framework")
     arguments.add("-Xstatic-framework")
     arguments.add("-output", _without_extension(framework_directory, ".framework"))
-
-    # The klibs of `main` are libraries too: the compiler includes only libraries it resolved.
-    arguments.add_all(main.transitive_klibs[target], before_each = "-library")
-    arguments.add_all(main_klibs, format_each = "-Xinclude=%s")
-    arguments.add_all(exported, format_each = "-Xexport-library=%s")
     if ctx.attr.bundle_id:
         arguments.add("-Xbinary=bundleId=" + ctx.attr.bundle_id)
     arguments.add("-opt" if ctx.var["COMPILATION_MODE"] == "opt" else "-g")
+
+    # As the Kotlin Gradle plugin does: the klibs of `main` make the framework, the other klibs are
+    # its libraries. The compiler resolves the included klibs itself. All of them are absolute.
+    klibs = ctx.actions.args()
+    klibs.add_all(libraries, format_each = "-library=%s")
+    klibs.add_all(main_klibs, format_each = "-Xinclude=%s")
+    klibs.add_all(exported, format_each = "-Xexport-library=%s")
 
     _run_compiler(
         ctx,
@@ -299,6 +336,7 @@ def _kt_native_framework_impl(ctx):
         outputs = files,
         mnemonic = "KotlinNativeLink",
         progress_message = "Linking the framework {} of %{{label}} for {}".format(name, target),
+        absolute_klibs = klibs,
     )
     return [
         DefaultInfo(files = depset(files)),
