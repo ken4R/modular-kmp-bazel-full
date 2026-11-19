@@ -80,6 +80,12 @@ maven.install(
         "androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0",
         "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0",
 
+        # What the Compose BOM aligns in Gradle: material3 asks for older Compose libraries, whose
+        # exact version ranges then conflict with the libraries of Compose 1.12.
+        "androidx.compose.animation:animation:1.12.1",
+        "androidx.compose.foundation:foundation:1.12.1",
+        "androidx.compose.material:material-ripple:1.12.1",
+
         # Compose compiler, a Kotlin compiler plugin: its version is the Kotlin version.
         "org.jetbrains.kotlin:kotlin-compose-compiler-plugin-embeddable:2.4.21",
 
@@ -89,12 +95,19 @@ maven.install(
         "androidx.test.ext:junit:1.3.0",
         "junit:junit:4.13.2",
         "org.robolectric:robolectric:4.18",
+
+        # The versions Gradle picks, the highest ones: Compose testing still asks for Espresso 3.5,
+        # whose exact version ranges conflict with androidx.test.ext:junit and Robolectric.
+        "androidx.test:monitor:1.8.0",
+        "androidx.test.services:storage:1.6.0",
     ],
     repositories = [
         "https://maven.google.com",
         "https://repo1.maven.org/maven2",
     ],
     use_starlark_android_rules = True,
+    # The versions listed here win over those that libraries ask for, as with Gradle constraints.
+    version_conflict_policy = "pinned",
 )
 
 # The Kotlin standard library comes with the compiler of rules_kotlin: one copy, at its version.

@@ -38,7 +38,14 @@ jobs:
       # JVM tests of the shared code, Compose screen tests on Robolectric, and the APK. The build
       # fails on a dependency that the module rules forbid. Linux skips Kotlin/Native and iOS.
       - name: Build and test the shared code and Android
-        run: bazel test //shared/... //android/...
+        shell: bash
+        run: bazel test //shared/... //android/... 2>&1 | tee "$RUNNER_TEMP/bazel.log"
+
+      # The Maven resolution prints each version conflict with a tree of thousands of lines: this
+      # keeps the conflicting libraries and the versions their users ask for.
+      - name: List the Maven version conflicts
+        if: failure()
+        run: grep -E '^[^ ].* wanted by$|^  [a-z]' "$RUNNER_TEMP/bazel.log" || echo "No Maven version conflict."
 
   macos:
     name: Kotlin/Native and iOS (Bazel, macOS)

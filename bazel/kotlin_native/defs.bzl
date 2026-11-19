@@ -282,8 +282,10 @@ def _kt_native_framework_impl(ctx):
     arguments.add("-produce", "framework")
     arguments.add("-Xstatic-framework")
     arguments.add("-output", _without_extension(framework_directory, ".framework"))
+
+    # The klibs of `main` are libraries too: the compiler includes only libraries it resolved.
+    arguments.add_all(main.transitive_klibs[target], before_each = "-library")
     arguments.add_all(main_klibs, format_each = "-Xinclude=%s")
-    arguments.add_all(libraries, before_each = "-library")
     arguments.add_all(exported, format_each = "-Xexport-library=%s")
     if ctx.attr.bundle_id:
         arguments.add("-Xbinary=bundleId=" + ctx.attr.bundle_id)
