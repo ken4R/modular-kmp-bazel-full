@@ -1,0 +1,10 @@
+load("//ios:ios_module.bzl", "ios_module")
+
+# The login screen in SwiftUI. Its logic is the shared LoginViewModel of //shared/feature/login.
+ios_module(
+    name = "Login",
+    deps = [
+        "//ios/Core/DesignSystem",
+        "//ios/SharedKit",
+    ],
+)

@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+#
+# Builds Shared.xcframework from the Kotlin sources with Bazel and copies it where the Swift
+# packages expect it: ios/SharedKit/Frameworks/Shared.xcframework.
+#
+#   tools/shared/sync             debug framework, the default
+#   tools/shared/sync --release   optimized framework
+#
+# Only the Swift packages need it: the Bazel build of iOS builds the framework itself. Run it
+# after a change under shared/, before you open a module in Xcode as a Swift package.
+
+set -euo pipefail
+
+compilation_mode="dbg"
+case "${1:-}" in
+  "" | --debug) ;;
+  --release) compilation_mode="opt" ;;
+  *)
+    echo "usage: tools/shared/sync [--debug | --release]" >&2
+    exit 64
+    ;;
+esac
+
+if [[ "$(uname -s)" != "Darwin" || "$(uname -m)" != "arm64" ]]; then
+  echo "tools/shared/sync needs an Apple silicon Mac: Kotlin/Native builds the iOS framework with Xcode." >&2
+  exit 1
+fi
+
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+cd "$root"
+
+target="//shared/umbrella:Shared_xcframework"
+destination="ios/SharedKit/Frameworks/Shared.xcframework"
+
+bazel build --compilation_mode="$compilation_mode" "$target"
+built="$(bazel cquery --compilation_mode="$compilation_mode" --output=files "$target" 2>/dev/null)"
+
+# Bazel outputs are read-only: make the old copy writable before replacing it.
+if [[ -e "$destination" ]]; then
+  chmod -R u+w "$destination"
+  rm -rf "$destination"
+fi
+mkdir -p "$destination"
+cp -R "$built/." "$destination/"
+chmod -R u+w "$destination"
+
+echo "Shared.xcframework ($compilation_mode) is in ios/SharedKit/Frameworks."

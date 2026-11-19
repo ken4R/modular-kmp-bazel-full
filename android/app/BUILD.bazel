@@ -1,0 +1,13 @@
+load("//android:android_module.bzl", "android_app")
+
+# The Android application assembles the features and owns navigation:
+# bazel build //android/app, then adb install bazel-bin/android/app/app.apk
+android_app(
+    name = "app",
+    application_id = "com.example.modular",
+    deps = [
+        "//android/core/designsystem",
+        "//android/feature/login",
+        "//shared/umbrella",
+    ],
+)

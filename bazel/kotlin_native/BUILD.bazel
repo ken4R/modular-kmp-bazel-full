@@ -1,0 +1,24 @@
+# Homemade Kotlin/Native rules: see defs.bzl. The compiler and the klibs come from MODULE.bazel,
+# through the module extension of extensions.bzl.
+
+# The iOS configuration a target is built in, to pick the framework of the matching Kotlin/Native
+# target: ios_arm64 for devices, ios_simulator_arm64 for simulators on Apple silicon.
+config_setting(
+    name = "ios_device",
+    constraint_values = [
+        "@apple_support//constraints:device",
+        "@platforms//cpu:arm64",
+        "@platforms//os:ios",
+    ],
+    visibility = ["//shared:__subpackages__"],
+)
+
+config_setting(
+    name = "ios_simulator",
+    constraint_values = [
+        "@apple_support//constraints:simulator",
+        "@platforms//cpu:arm64",
+        "@platforms//os:ios",
+    ],
+    visibility = ["//shared:__subpackages__"],
+)

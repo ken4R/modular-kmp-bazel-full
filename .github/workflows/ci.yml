@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: Shared code on the JVM and Android (Bazel, Linux)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: bazel-contrib/setup-bazel@0.19.2
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}-linux
+          repository-cache: true
+
+      # The runner has the Android SDK in ANDROID_HOME, with its licenses accepted. compileSdk is
+      # its newest platform: Compose 1.12 and Lifecycle 2.11 need API level 37.
+      - name: Install the Android platform of compileSdk
+        run: |
+          sdkmanager="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          "$sdkmanager" --install "platforms;android-37.0" > /dev/null \
+            || "$sdkmanager" --install "platforms;android-37" > /dev/null
+          ls "$ANDROID_HOME/platforms" "$ANDROID_HOME/build-tools"
+
+      # JVM tests of the shared code, Compose screen tests on Robolectric, and the APK. The build
+      # fails on a dependency that the module rules forbid. Linux skips Kotlin/Native and iOS.
+      - name: Build and test the shared code and Android
+        run: bazel test //shared/... //android/...
+
+  macos:
+    name: Kotlin/Native and iOS (Bazel, macOS)
+    runs-on: macos-26
+    timeout-minutes: 90
+    env:
+      # The Xcode version Kotlin/Native 2.4 is tested with. Bazel and xcodebuild read this variable.
+      DEVELOPER_DIR: /Applications/Xcode_26.4.app/Contents/Developer
+      IOS_SIMULATOR: iPhone 17
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: bazel-contrib/setup-bazel@0.19.2
+        with:
+          bazelisk-cache: true
+          disk-cache: ${{ github.workflow }}-macos
+          repository-cache: true
+
+      # The Bazel test runner reuses one simulator, named after its device type and iOS version,
+      # and creates it with this same tool when it is missing. Its first boot takes minutes on a
+      # new runner, more than a test timeout: it happens here, before the tests.
+      - name: Boot the simulator of the iOS tests
+        run: |
+          id="$(bazel run @rules_apple//apple/testing/default_runner:simulator_creator -- \
+            --device-type "$IOS_SIMULATOR" \
+            --sdk-version "$(xcrun --sdk iphonesimulator --show-sdk-version)")"
+          echo "IOS_SIMULATOR_ID=${id:?the simulator creator printed no id}" >> "$GITHUB_ENV"
+
+      # The shared code compiled by the homemade Kotlin/Native rules, its tests run in the simulator.
+      - name: Test the shared code in an iOS simulator
+        run: |
+          bazel test $(bazel query 'kind("kt_native_test", //shared/...)') \
+            --test_env=KOTLIN_NATIVE_TEST_DEVICE="$IOS_SIMULATOR_ID"
+
+      # Builds every iOS target, the Kotlin framework and the application included, runs the unit
+      # tests and checks that the generated Package.swift files are current.
+      - name: Build and test iOS with Bazel
+        run: bazel test //ios/... --@rules_apple//apple/build_settings:ios_simulator_device="$IOS_SIMULATOR"
+
+      - name: Generate the Xcode project
+        run: bazel run //ios:xcodeproj
+
+      # The same modules, built as Swift packages the way Xcode does, on the framework that
+      # tools/shared/sync builds with Bazel and copies into ios/SharedKit/Frameworks.
+      - name: Build Shared.xcframework for the Swift packages
+        run: tools/shared/sync
+
+      - name: Build and test the Login module as a Swift package
+        working-directory: ios/Features/Login
+        run: xcodebuild test -scheme Login -destination "id=$IOS_SIMULATOR_ID"

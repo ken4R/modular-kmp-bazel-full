@@ -1,0 +1,10 @@
+load("//shared:kmp_module.bzl", "kmp_feature")
+
+# Logic of the login screen: LoginViewModel, its state and its events.
+kmp_feature(
+    name = "login",
+    deps = [
+        # SessionRepository appears in the constructor of LoginViewModel.
+        "//shared/core/session",
+    ],
+)

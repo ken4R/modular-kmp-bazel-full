@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="login_title">Connexion</string>
+    <string name="login_email">E-mail</string>
+    <string name="login_password">Mot de passe</string>
+    <string name="login_submit">Se connecter</string>
+    <string name="login_forgot_password">Mot de passe oublié ?</string>
+    <string name="login_demo_hint">Prototype : le mot de passe est « kotlin ».</string>
+    <string name="login_error_invalid_email">Adresse e-mail invalide.</string>
+    <string name="login_error_invalid_credentials">E-mail ou mot de passe incorrect.</string>
+</resources>

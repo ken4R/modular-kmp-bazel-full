@@ -1,0 +1,4 @@
+load("//android:android_module.bzl", "android_core")
+
+# Theme and components shared by every Android screen.
+android_core(name = "designsystem")
