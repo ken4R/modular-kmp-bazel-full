@@ -1,0 +1,4 @@
+load("//ios:ios_module.bzl", "ios_module")
+
+# SwiftUI components shared by every feature. No dependency on the shared Kotlin code.
+ios_module(name = "DesignSystem")

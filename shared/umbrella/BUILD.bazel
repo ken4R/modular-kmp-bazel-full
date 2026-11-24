@@ -1,0 +1,14 @@
+load("//shared:kmp_module.bzl", "kmp_umbrella")
+
+# The composition root of the shared code, and the Shared framework that iOS imports.
+kmp_umbrella(
+    name = "umbrella",
+    # What is listed here is the Swift API of the Shared framework: one line per feature.
+    # Core modules are not exported: Swift reaches them through ViewModels only.
+    export_to_swift = [
+        "//shared/feature/login",
+    ],
+    deps = [
+        "//shared/core/session",
+    ],
+)

@@ -1,0 +1,25 @@
+load("@rules_kotlin//kotlin:core.bzl", "define_kt_toolchain", "kt_compiler_plugin", "kt_kotlinc_options")
+
+# Kotlin on the JVM, for the shared code on Android and for the Android modules. Registered in
+# MODULE.bazel. Bytecode for Java 17, the level the Android tools expect.
+define_kt_toolchain(
+    name = "kotlin_toolchain",
+    jvm_target = "17",
+)
+
+# Options of the shared modules: every declaration states its visibility, because what is public
+# is what Compose and Swift see. Tests do not use it.
+kt_kotlinc_options(
+    name = "explicit_api",
+    visibility = ["//shared:__subpackages__"],
+    x_explicit_api_mode = "strict",
+)
+
+# The Compose compiler, applied by the Android macros in android/android_module.bzl.
+kt_compiler_plugin(
+    name = "compose_compiler",
+    id = "androidx.compose.compiler.plugins.kotlin",
+    target_embedded_compiler = True,
+    visibility = ["//android:__subpackages__"],
+    deps = ["@maven//:org_jetbrains_kotlin_kotlin_compose_compiler_plugin_embeddable"],
+)
